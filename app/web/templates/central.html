@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Central API - Gateway de Comunicação{% endblock %}
+
+{% block page_title %}Teste Central API{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-server text-info me-2"></i>Enviar Mensagem para Central API</h5>
+            </div>
+            <div class="card-body">
+                {% if success %}
+                <div class="alert alert-success alert-dismissible fade show">
+                    <i class="bi bi-check-circle me-2"></i>{{ success }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endif %}
+                {% if error %}
+                <div class="alert alert-danger alert-dismissible fade show">
+                    <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endif %}
+                
+                <form method="post" action="/central/test-send">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="canal" class="form-label">Canal</label>
+                            <select class="form-select" id="canal" name="canal" required>
+                                <option value="whatsapp">WhatsApp</option>
+                                <option value="outlook">Outlook</option>
+                                <option value="web">Web</option>
+                                <option value="api">API</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="cliente_nome" class="form-label">Nome do Cliente</label>
+                            <input type="text" class="form-control" id="cliente_nome" name="cliente_nome" 
+                                   placeholder="João Silva" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="cliente_identificador" class="form-label">Identificador do Cliente</label>
+                            <input type="text" class="form-control" id="cliente_identificador" name="cliente_identificador" 
+                                   placeholder="5511999999999 ou cliente@empresa.com" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="empresa_dominio" class="form-label">Domínio da Empresa</label>
+                            <input type="text" class="form-control" id="empresa_dominio" name="empresa_dominio" 
+                                   placeholder="empresa.com" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="mensagem_id_externo" class="form-label">ID Externo da Mensagem</label>
+                            <input type="text" class="form-control" id="mensagem_id_externo" name="mensagem_id_externo" 
+                                   placeholder="wamid.xxx ou <msg@domain.com>" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="pergunta" class="form-label">Pergunta do Cliente</label>
+                            <textarea class="form-control" id="pergunta" name="pergunta" rows="3" 
+                                      placeholder="Texto da mensagem do cliente..." required></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-info mt-3">
+                        <i class="bi bi-send-fill me-2"></i>Enviar para Central API
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-heart-pulse text-danger me-2"></i>Health Check</h5>
+                <button type="button" class="btn btn-outline-info btn-sm" onclick="checkHealth()">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Verificar
+                </button>
+            </div>
+            <div class="card-body">
+                {% if success %}
+                <div class="alert alert-success alert-dismissible fade show">
+                    <i class="bi bi-check-circle me-2"></i>{{ success }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endif %}
+                {% if error %}
+                <div class="alert alert-danger alert-dismissible fade show">
+                    <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Status da Central API</label>
+                    <div class="d-flex align-items-center gap-3">
+                        <span id="health-status" class="badge bg-secondary fs-6 px-3 py-2">Não verificado</span>
+                        <button class="btn btn-sm btn-outline-secondary ms-3" onclick="checkHealth()">
+                            <i class="bi bi-arrow-clockwise"></i> Verificar agora
+                        </button>
+                    </div>
+                </div>
+                
+                <hr>
+                <h6>Exemplo de Payload (POST /api/v1/mensagens/receber)</h6>
+                <div class="bg-dark text-light p-3 rounded" style="font-size: 0.8rem; max-height: 300px; overflow-y: auto;">
+                    <pre>{{ {
+                        "canal": "whatsapp",
+                        "cliente_nome": "João Silva",
+                        "cliente_identificador": "5511999999999",
+                        "empresa_dominio": "empresa.com",
+                        "mensagem_id_externo": "wamid.xxx",
+                        "pergunta": "Olá, preciso de ajuda com meu pedido"
+                    } | tojson(indent=2) }}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function checkHealth() {
+    const statusEl = document.getElementById('health-status');
+    const btn = event.target.closest('button');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-arrow-clockwise spin me-1"></i>Verificando...';
+    
+    try {
+        const response = await fetch('/central/health', { method: 'GET' });
+        const result = await response.json();
+        if (result.healthy) {
+            statusEl.className = 'badge bg-success fs-6 px-3 py-2';
+            statusEl.textContent = 'OK - Central API respondendo';
+        } else {
+            statusEl.className = 'badge bg-danger fs-6 px-3 py-2';
+            statusEl.textContent = 'FAIL - Central API não respondendo';
+        }
+    } catch (e) {
+        statusEl.className = 'badge bg-danger fs-6 px-3 py-2';
+        statusEl.textContent = 'Erro na verificação';
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i>Verificar';
+    }
+}
+</script>
+{% endblock %}

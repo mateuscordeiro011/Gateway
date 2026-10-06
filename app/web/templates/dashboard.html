@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Gateway de Comunicação{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Status Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-chat-dots"></i>
+                </div>
+                <div class="ms-3">
+                    <h6 class="text-muted mb-1">Webhook WhatsApp</h6>
+                    <span class="status-badge status-{{ whatsapp_status }}">{{ whatsapp_status|replace('_', ' ')|title }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon bg-success bg-opacity-10 text-success">
+                    <i class="bi bi-microsoft"></i>
+                </div>
+                <div class="ms-3">
+                    <h6 class="text-muted mb-1">Webhook Outlook</h6>
+                    <span class="status-badge status-{{ outlook_status }}">{{ outlook_status|replace('_', ' ')|title }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon bg-info bg-opacity-10 text-info">
+                    <i class="bi bi-server"></i>
+                </div>
+                <div class="ms-3">
+                    <h6 class="text-muted mb-1">Central API</h6>
+                    <span class="status-badge status-{{ central_status }}">{{ central_status|replace('_', ' ')|title }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                    <i class="bi bi-key"></i>
+                </div>
+                <div class="ms-3">
+                    <h6 class="text-muted mb-1">Idempotência</h6>
+                    <span class="badge bg-secondary">{{ idempotency_stats.total or 0 }} chaves</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Idempotency Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-4 col-md-6">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-1">Total de Chaves</h6>
+                    <h2 class="mb-0 fw-bold">{{ idempotency_stats.total or 0 }}</h2>
+                </div>
+                <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-key"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-md-6">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-1">Processadas</h6>
+                    <h2 class="mb-0 fw-bold text-success">{{ idempotency_stats.processed or 0 }}</h2>
+                </div>
+                <div class="stat-icon bg-success bg-opacity-10 text-success">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-md-6">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-1">Pendentes</h6>
+                    <h2 class="mb-0 fw-bold text-warning">{{ idempotency_stats.pending or 0 }}</h2>
+                </div>
+                <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                    <i class="bi bi-clock"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning-fill me-2"></i>Ações Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <a href="/whatsapp" class="btn btn-outline-primary w-100 py-3">
+                            <i class="bi bi-whatsapp fs-4 d-block mb-2"></i>
+                            Testar WhatsApp
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/outlook" class="btn btn-outline-success w-100 py-3">
+                            <i class="bi bi-microsoft fs-4 d-block mb-2"></i>
+                            Testar Outlook
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/central" class="btn btn-outline-info w-100 py-3">
+                            <i class="bi bi-server fs-4 d-block mb-2"></i>
+                            Testar Central API
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/idempotency" class="btn btn-outline-secondary w-100 py-3">
+                            <i class="bi bi-key fs-4 d-block mb-2"></i>
+                            Gerenciar Idempotência
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

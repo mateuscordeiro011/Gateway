@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Configuração - Gateway de Comunicação{% endblock %}
+
+{% block page_title %}Configuração do Sistema{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Variáveis de Ambiente (Segredos mascarados)</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 35%">Variável</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for key, value in config.items() %}
+                            <tr>
+                                <td><code>{{ key }}</code></td>
+                                <td>
+                                    {% if value == "" %}
+                                        <span class="text-danger">Não configurado</span>
+                                    {% elif value == "***" %}
+                                        <span class="badge bg-warning text-dark">Configurado (oculto)</span>
+                                    {% else %}
+                                        <code>{{ value }}</code>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="alert alert-warning mt-3">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Segurança:</strong> Valores sensíveis (tokens, secrets, API keys) são exibidos como *** para proteção. 
+                    Configure as variáveis no arquivo <code>.env</code> ou variáveis de ambiente do sistema.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-code me-2"></i>Mapeamento WhatsApp → Empresa</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Arquivo: <code>{{ settings.WHATSAPP_COMPANY_MAPPING_FILE }}</code></p>
+                <div class="bg-dark text-light p-3 rounded" style="font-size: 0.85rem;">
+                    <pre>{{ settings.whatsapp_company_mapping | tojson(indent=2) }}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

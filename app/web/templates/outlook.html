@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Outlook - Gateway de Comunicação{% endblock %}
+
+{% block page_title %}Teste Outlook{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-microsoft text-primary me-2"></i>Responder E-mail de Teste</h5>
+            </div>
+            <div class="card-body">
+                {% if success %}
+                <div class="alert alert-success alert-dismissible fade show">
+                    <i class="bi bi-check-circle me-2"></i>{{ success }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endif %}
+                {% if error %}
+                <div class="alert alert-danger alert-dismissible fade show">
+                    <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endif %}
+                
+                <form method="post" action="/outlook/test-reply">
+                    <div class="mb-3">
+                        <label for="message_id" class="form-label">Message ID (do Microsoft Graph)</label>
+                        <input type="text" class="form-control" id="message_id" name="message_id" 
+                               placeholder="AAMkADxxx..." required>
+                        <div class="form-text">ID da mensagem original no Microsoft Graph</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="resposta" class="form-label">Resposta</label>
+                        <textarea class="form-control" id="resposta" name="resposta" rows="5" 
+                                  placeholder="Digite a resposta ao cliente..." required></textarea>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="reply_all" name="reply_all">
+                        <label class="form-check-label" for="reply_all">Responder a todos (replyAll)</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send-fill me-2"></i>Enviar Resposta
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-webhook me-2"></i>Subscription Webhook</h5>
+            </div>
+            <div class="card-body">
+                {% if success and not error %}
+                <div class="alert alert-success alert-dismissible fade show">
+                    <i class="bi bi-check-circle me-2"></i>{{ success }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endif %}
+                {% if error %}
+                <div class="alert alert-danger alert-dismissible fade show">
+                    <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endif %}
+                
+                <form method="post" action="/outlook/create-subscription">
+                    <div class="mb-3">
+                        <label for="notification_url" class="form-label">Notification URL</label>
+                        <input type="url" class="form-control" id="notification_url" name="notification_url" 
+                               placeholder="https://seu-dominio.com/webhook/outlook" required>
+                        <div class="form-text">URL pública acessível que receberá as notificações do Graph</div>
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="bi bi-plus-circle me-2"></i>Criar Subscription
+                    </button>
+                </form>
+                
+                <hr>
+                <h6>Informações de Configuração</h6>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Tenant ID</label>
+                    <code>{{ settings.GRAPH_TENANT_ID or "Não configurado" }}</code>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Client ID</label>
+                    <code>{{ settings.GRAPH_CLIENT_ID or "Não configurado" }}</code>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Subscription Resource</label>
+                    <code>{{ settings.GRAPH_SUBSCRIPTION_RESOURCE or "/users/{userId}/mailFolders('Inbox')/messages" }}</code>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Webhook URL</label>
+                    <code>https://seu-dominio.com/webhook/outlook</code>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Validation Token</label>
+                    <p class="text-muted small">O Graph fará um GET com ?validationToken=xxx - retorne o token como texto plano</p>
+                </div>
+                <hr>
+                <h6>Exemplo de Notificação Graph</h6>
+                <div class="bg-dark text-light p-3 rounded" style="font-size: 0.8rem; max-height: 300px; overflow-y: auto;">
+                    <pre>{{ {
+                        "value": [{
+                            "subscriptionId": "sub-xxx",
+                            "clientState": "secret-state",
+                            "changeType": "created",
+                            "resource": "users/user@domain.com/messages/msg-id",
+                            "resourceData": {
+                                "@odata.type": "#microsoft.graph.message",
+                                "@odata.id": "users/user@domain.com/messages/msg-id",
+                                "id": "AAMkADxxx"
+                            }
+                        }]
+                    } | tojson(indent=2) }}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

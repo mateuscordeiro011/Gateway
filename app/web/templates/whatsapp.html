@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}WhatsApp - Gateway de Comunicação{% endblock %}
+
+{% block page_title %}Teste WhatsApp{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-whatsapp text-success me-2"></i>Enviar Mensagem de Teste</h5>
+            </div>
+            <div class="card-body">
+                {% if success %}
+                <div class="alert alert-success alert-dismissible fade show">
+                    <i class="bi bi-check-circle me-2"></i>{{ success }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endif %}
+                {% if error %}
+                <div class="alert alert-danger alert-dismissible fade show">
+                    <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endif %}
+                
+                <form method="post" action="/whatsapp/test-send">
+                    <div class="mb-3">
+                        <label for="telefone" class="form-label">Telefone (E.164 sem +)</label>
+                        <input type="text" class="form-control" id="telefone" name="telefone" 
+                               placeholder="5511999999999" required>
+                        <div class="form-text">Formato: código do país + DDD + número (ex: 5511999999999)</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="mensagem" class="form-label">Mensagem</label>
+                        <textarea class="form-control" id="mensagem" name="mensagem" rows="4" 
+                                  placeholder="Digite a mensagem de teste..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-send-fill me-2"></i>Enviar Mensagem
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Informações de Configuração</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Phone Number ID</label>
+                    <code>{{ phone_number_id or "Não configurado" }}</code>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Webhook URL</label>
+                    <code>https://seu-dominio.com/webhook/whatsapp</code>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Verify Token</label>
+                    <code>{{ "***" if settings.WHATSAPP_VERIFY_TOKEN else "Não configurado" }}</code>
+                </div>
+                <hr>
+                <h6>Exemplos de Payload Webhook</h6>
+                <div class="bg-dark text-light p-3 rounded" style="font-size: 0.8rem; max-height: 300px; overflow-y: auto;">
+                    <pre>{{
+                    {
+                        "object": "whatsapp_business_account",
+                        "entry": [{
+                            "id": "WHATSAPP_BUSINESS_ACCOUNT_ID",
+                            "changes": [{
+                                "value": {
+                                    "messaging_product": "whatsapp",
+                                    "metadata": {
+                                        "display_phone_number": "5511999999999",
+                                        "phone_number_id": "PHONE_NUMBER_ID"
+                                    },
+                                    "contacts": [{
+                                        "profile": {"name": "João Silva"},
+                                        "wa_id": "5511999999999"
+                                    }],
+                                    "messages": [{
+                                        "from": "5511999999999",
+                                        "id": "wamid.xxx",
+                                        "timestamp": "1704067200",
+                                        "type": "text",
+                                        "text": {"body": "Olá, preciso de ajuda"}
+                                    }]
+                                },
+                                "field": "messages"
+                            }]
+                        }]
+                    } | tojson(indent=2)
+                    }}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Logs - Gateway de Comunicação{% endblock %}
+
+{% block page_title %}Visualizador de Logs{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-file-text me-2"></i>Logs da Aplicação</h5>
+                    <div class="d-flex gap-2">
+                        <select class="form-select form-select-sm w-auto" id="level-filter" onchange="filterLogs()">
+                            <option value="">Todos os níveis</option>
+                            <option value="DEBUG" {% if level_filter == 'DEBUG' %}selected{% endif %}>DEBUG</option>
+                            <option value="INFO" {% if level_filter == 'INFO' %}selected{% endif %}>INFO</option>
+                            <option value="WARNING" {% if level_filter == 'WARNING' %}selected{% endif %}>WARNING</option>
+                            <option value="ERROR" {% if level_filter == 'ERROR' %}selected{% endif %}>ERROR</option>
+                            <option value="CRITICAL" {% if level_filter == 'CRITICAL' %}selected{% endif %}>CRITICAL</option>
+                        </select>
+                        <input type="number" class="form-control form-control-sm w-auto" id="limit-input" value="{{ limit }}" min="10" max="1000" step="10" onchange="filterLogs()">
+                        <button class="btn btn-outline-secondary btn-sm" onclick="filterLogs()">
+                            <i class="bi bi-filter"></i> Filtrar
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="refreshLogs()">
+                            <i class="bi bi-arrow-clockwise"></i> Atualizar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if logs %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" style="font-size: 0.85rem;">
+                        <thead>
+                            <tr>
+                                <th style="width: 20%">Timestamp</th>
+                                <th style="width: 10%">Nível</th>
+                                <th style="width: 15%">Logger</th>
+                                <th>Mensagem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                            <tr>
+                                <td class="text-muted small">{{ log.timestamp }}</td>
+                                <td>
+                                    <span class="badge bg-{{ log.level|lower == 'debug' and 'secondary' or log.level|lower == 'info' and 'info' or log.level|lower == 'warning' and 'warning' or log.level|lower == 'error' and 'danger' or 'dark' }}">
+                                        {{ log.level }}
+                                    </span>
+                                </td>
+                                <td class="text-muted small">{{ log.logger }}</td>
+                                <td>{{ log.message }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-file-text"></i>
+                    <h5>Nenhum log encontrado</h5>
+                    <p class="text-muted">Configure o logging para arquivo para visualizar logs aqui.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function filterLogs() {
+    const level = document.getElementById('level-filter').value;
+    const limit = document.getElementById('limit-input').value;
+    const params = new URLSearchParams();
+    if (level) params.append('level', level);
+    params.append('limit', limit);
+    window.location.href = '/logs?' + params.toString();
+}
+
+function refreshLogs() {
+    window.location.reload();
+}
+</script>
+{% endblock %}

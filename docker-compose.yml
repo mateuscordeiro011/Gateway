@@ -2,56 +2,27 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
+      target: runtime
+    image: gateway-comunicacao:0.1.0
+    env_file: .env
     environment:
-      - CENTRAL_API_URL=${CENTRAL_API_URL:-http://host.docker.internal:8000}
-      - GATEWAY_API_KEY=${GATEWAY_API_KEY}
-      - WHATSAPP_VERIFY_TOKEN=${WHATSAPP_VERIFY_TOKEN}
-      - WHATSAPP_APP_SECRET=${WHATSAPP_APP_SECRET}
-      - WHATSAPP_ACCESS_TOKEN=${WHATSAPP_ACCESS_TOKEN}
-      - WHATSAPP_PHONE_NUMBER_ID=${WHATSAPP_PHONE_NUMBER_ID}
-      - WHATSAPP_BUSINESS_ACCOUNT_ID=${WHATSAPP_BUSINESS_ACCOUNT_ID}
-      - WHATSAPP_COMPANY_MAPPING_FILE=${WHATSAPP_COMPANY_MAPPING_FILE:-./config/whatsapp_company_mapping.json}
-      - GRAPH_TENANT_ID=${GRAPH_TENANT_ID}
-      - GRAPH_CLIENT_ID=${GRAPH_CLIENT_ID}
-      - GRAPH_CLIENT_SECRET=${GRAPH_CLIENT_SECRET}
-      - GRAPH_NOTIFICATION_CLIENT_STATE=${GRAPH_NOTIFICATION_CLIENT_STATE}
-      - GRAPH_SUBSCRIPTION_RESOURCE=${GRAPH_SUBSCRIPTION_RESOURCE}
-      - REQUEST_TIMEOUT=${REQUEST_TIMEOUT:-30.0}
-      - RETRY_MAX_ATTEMPTS=${RETRY_MAX_ATTEMPTS:-3}
-      - RETRY_MIN_WAIT=${RETRY_MIN_WAIT:-1.0}
-      - RETRY_MAX_WAIT=${RETRY_MAX_WAIT:-10.0}
-      - IDEMPOTENCY_BACKEND=${IDEMPOTENCY_BACKEND:-database}
-      - IDEMPOTENCY_TTL_SECONDS=${IDEMPOTENCY_TTL_SECONDS:-86400}
-      - DATABASE_URL=${DATABASE_URL:-sqlite+aiosqlite:///./data/gateway.db}
-      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      # 4 barras = caminho absoluto dentro do container
+      DATABASE_URL: sqlite+aiosqlite:////app/data/gateway.db
+    ports:
+      - "127.0.0.1:8001:8000"   # só acessível na própria máquina
     volumes:
       - ./config:/app/config:ro
-      - ./data:/app/data
-    healthcheck:
-      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8000/health', timeout=3).raise_for_status()"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
-    restart: unless-stopped
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 3
-    profiles:
-      - with-redis
+      - gateway_data:/app/data
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
     restart: unless-stopped
 
 volumes:
-  redis_data:
+  gateway_data:

@@ -1,0 +1,17 @@
+.git
+.venv
+venv
+__pycache__
+*.pyc
+.env
+.env.*
+!.env.example
+*.db
+data/
+config/whatsapp_company_mapping.json
+.pytest_cache
+.ruff_cache
+.coverage
+htmlcov
+.vscode
+.idea

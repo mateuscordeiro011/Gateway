@@ -1,0 +1,21 @@
+services:
+  app:
+    build:
+      target: test              # inclui pytest e ruff
+    read_only: false
+    user: "0:0"                 # só em dev, evita problemas de permissão no bind mount
+    volumes:
+      - ./app:/app/app
+      - ./tests:/app/tests
+      - ./config:/app/config:ro
+      - gateway_data:/app/data
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+  test:
+    build:
+      context: .
+      target: test
+    env_file: .env
+    profiles: ["test"]
+
+volumes:
+  gateway_data:

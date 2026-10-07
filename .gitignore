@@ -1,0 +1,33 @@
+# Ambientes virtuais
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Testes, cobertura, lint
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.ruff_cache/
+
+# Segredos e dados locais (NUNCA versionar)
+.env
+.env.*
+!.env.example
+config/whatsapp_company_mapping.json
+data/
+*.db
+*.sqlite3
+
+# IDE e SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

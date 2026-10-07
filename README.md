@@ -11,30 +11,52 @@ WhatsApp/Outlook → Webhook → Gateway → API Central → Aprovação Humana 
 ## Requisitos
 
 - Python 3.12+
-- Docker & Docker Compose (opcional, para produção)
+- Docker & Docker Compose
 - SQLite (padrão) ou PostgreSQL (produção)
 - Redis (opcional, Fase 4)
 
-## Instalação Local
+## Instalação Local (Docker)
 
 ```bash
-# Criar ambiente virtual
-python -m venv .venv
-source .venv/bin/activate
-
-# Instalar dependências
-pip install -e ".[dev]"
+# Clone o repositório
+git clone https://github.com/mateuscordeiro011/Gateway-comunicacao.git
+cd Gateway-comunicacao
 
 # Configurar variáveis de ambiente
 cp .env.example .env
-# Editar .env com suas credenciais
+# Editar .env com suas credenciais (chmod 600 .env em Linux/Mac)
+
+# Gerar segredos seguros
+openssl rand -hex 32  # para cada segredo (GATEWAY_API_KEY, etc.)
 
 # Copiar configuração de mapeamento WhatsApp
 cp config/whatsapp_company_mapping.json.example config/whatsapp_company_mapping.json
 # Editar com seus números e domínios
 
-# Executar
-uvicorn app.main:app --host 0.0.0.0 --port 8000
+# Subir com Docker Compose (produção)
+docker compose up -d --build
+
+# Verificar saúde
+curl http://127.0.0.1:8001/health
+
+# Ver logs
+docker compose logs -f app
+```
+
+## Desenvolvimento Local (com hot reload)
+
+```bash
+# Subir ambiente de desenvolvimento
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+
+# Acessar shell no container
+docker compose -f docker-compose.yml -f docker-compose.dev.yml exec app sh
+
+# Executar testes
+docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile test run --rm test
+
+# Lint
+docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm --no-deps app ruff check .
 ```
 
 ## Configuração
@@ -134,12 +156,45 @@ Chave: telefone E.164 sem `+` | Valor: domínio da empresa
 
 ## Docker
 
-```bash
-# Build e execução básica
-docker compose up --build
+### Produção
 
-# Com Redis (Fase 4)
-docker compose --profile with-redis up --build
+```bash
+# Build e execução
+docker compose up -d --build
+
+# Verificar status
+docker compose ps
+
+# Ver logs
+docker compose logs -f app
+
+# Parar
+docker compose down
+
+# Parar e remover volumes (cuidado: apaga o banco)
+docker compose down -v
+```
+
+### Desenvolvimento
+
+```bash
+# Com hot reload
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+
+# Testes
+docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile test run --rm test
+
+# Lint
+docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm --no-deps app ruff check .
+
+# Shell no container
+docker compose -f docker-compose.yml -f docker-compose.dev.yml exec app sh
+```
+
+### Backup do banco
+
+```bash
+docker run --rm -v gateway-comunicacao_gateway_data:/d -v "$PWD":/b alpine tar czf /b/backup-$(date +%F).tgz -C /d .
 ```
 
 ## Testes

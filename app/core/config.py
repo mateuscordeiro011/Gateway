@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     GRAPH_CLIENT_SECRET: str = Field(default="")
     GRAPH_NOTIFICATION_CLIENT_STATE: str = Field(default="")
     GRAPH_SUBSCRIPTION_RESOURCE: str = Field(default="/users/{userId}/mailFolders('Inbox')/messages")
+    GRAPH_USER_ID: str = Field(default="")
 
     # Retries
     REQUEST_TIMEOUT: float = Field(default=30.0)

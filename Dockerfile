@@ -14,9 +14,9 @@ RUN python -c "import tomllib;print('\n'.join(tomllib.load(open('pyproject.toml'
 # ---------- test/dev: inclui pytest e ruff ----------
 FROM builder AS test
 WORKDIR /app
+COPY pyproject.toml ./
 RUN python -c "import tomllib;print('\n'.join(tomllib.load(open('pyproject.toml','rb'))['project']['optional-dependencies']['dev']))" > req-dev.txt \
  && pip install -r req-dev.txt
-COPY pyproject.toml ./
 COPY app/ ./app/
 COPY tests/ ./tests/
 ENV PYTHONPATH=/app
